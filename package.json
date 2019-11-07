@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@material-ui/core": "^4.6.0",
+    "@material-ui/styles": "^4.6.0",
     "@types/history": "^4.7.3",
     "@types/jest": "24.0.20",
     "@types/material-ui": "^0.21.7",

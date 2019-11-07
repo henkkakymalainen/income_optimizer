@@ -1,38 +1,17 @@
 import React from 'react';
 import { withStyles, WithStyles } from '@material-ui/core';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import IconButton from '@material-ui/core/IconButton';
+import HeaderBar from '../components/HeaderBar';
 
 type Props = WithStyles<typeof styles>;
 
 const Calculator = (props: Props) => {
-    const { classes } = props;
     return (
-        <AppBar position="static">
-            <Toolbar>
-                <IconButton edge="start" className={classes.menuButton}>
-                    Calculator
-                </IconButton>
-                <IconButton edge="start" className={classes.menuButton}>
-                    Stats
-                </IconButton>
-                <IconButton edge="start" className={classes.menuButton}>
-                    Info
-                </IconButton>
-                <IconButton edge="start" className={classes.menuButton}>
-                    About
-                </IconButton>
-            </Toolbar>
-        </AppBar>
+        <>
+            <HeaderBar />
+        </>
     );
 };
 
-const styles = {
-    menuButton: {
-        marginRight: 8,
-        color: '#fafafa',
-    },
-};
+const styles = {};
 
 export default withStyles(styles)(Calculator);

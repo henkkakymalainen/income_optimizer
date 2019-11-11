@@ -1,4 +1,3 @@
-import { incomeLimits } from '../data/studentBenefits';
 import { calculateRemainingIncomeBeforeNextStep } from '../optimizer';
 import casual from 'casual';
 

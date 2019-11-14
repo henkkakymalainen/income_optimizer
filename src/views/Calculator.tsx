@@ -1,17 +1,233 @@
 import React from 'react';
-import { withStyles, WithStyles } from '@material-ui/core';
+import { useState } from 'react';
+import {
+    TextField,
+    Container,
+    Grid, Button,
+    FormControl,
+    RadioGroup,
+    FormControlLabel,
+    Radio,
+} from '@material-ui/core';
+import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import HeaderBar from '../components/HeaderBar';
+import classNames from 'classnames';
 
-type Props = WithStyles<typeof styles>;
+const Calculator = () => {
+    const classes = useStyles();
+    const [ annualIncome, setAnnualIncome ] = useState<number | ''>('');
+    const [ salaryRow, setSalaryRow ] = useState<number | ''>('');
+    const [ salaryRowType, setSalaryRowType ] = useState<'month' | 'hour'>('month');
+    const [ usedMonths, setUsedMonths ] = useState(0);
+    const [ housingCosts, setHousingCosts ] = useState<number | ''>('');
+    const [ houseHoldSize, setHouseHoldSize ] = useState<number | ''>('');
+    const [ hasHouseMates, setHasHouseMates ] = useState(false);
 
-const Calculator = (props: Props) => {
+    const renderSalaryField = () => {
+
+        const handleTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+            if (event.target.value === 'month' || event.target.value === 'hour') {
+                setSalaryRowType(event.target.value);
+            }
+        };
+
+        return (
+            <Grid container className={classes.row}>
+                <Grid item>
+                     <TextField
+                        required
+                        id="currentSalary"
+                        label="Current salary"
+                        className={classes.textField}
+                        margin="normal"
+                        variant="outlined"
+                        value={salaryRow}
+                        onChange={e => setSalaryRow(parseInt(e.target.value) || '')}
+                    />
+                    <TextField
+                        id='units'
+                        name='units'
+                        select
+                        className={classes.textField}
+                        value={salaryRowType}
+                        onChange={handleTypeChange}
+                        InputLabelProps={{
+                            shrink: true,
+                            style: {
+                                maxWidth: 120,
+                            },
+                        }}
+                        SelectProps={{
+                            displayEmpty: false,
+                            native: true,
+                        }}
+                        margin="normal"
+                        variant="outlined"
+                        type="text"
+                    >
+                        <option value="month">
+                            € / mo
+                        </option>
+                        <option value="hour">
+                            € / h
+                        </option>
+                    </TextField>
+                    <FormControl
+                        margin="normal"
+                        variant="outlined"
+                    >
+                        <Button
+                            variant="outlined"
+                            onClick={() => {}}
+                            className={classes.button}
+                        >
+                            Add row
+                        </Button>
+                    </FormControl>
+                </Grid>
+            </Grid>
+        )
+    };
+
+    const renderUsedBenefitMonths = () => {
+        return (
+            <TextField
+                required
+                id="usedMonths"
+                label="Used benefit months"
+                className={classNames(classes.row, classes.textField)}
+                margin="normal"
+                variant="outlined"
+                value={usedMonths}
+                onChange={e => setUsedMonths(parseInt(e.target.value))}
+                InputLabelProps={{
+                    shrink: true,
+                }}
+                SelectProps={{
+                    displayEmpty: false,
+                    native: true,
+                }}
+
+                select
+            >
+                <option value={0}>0</option>
+                <option value={1}>1</option>
+                <option value={2}>2</option>
+                <option value={3}>3</option>
+                <option value={4}>4</option>
+                <option value={5}>5</option>
+                <option value={6}>6</option>
+                <option value={7}>7</option>
+                <option value={8}>8</option>
+                <option value={9}>9</option>
+                <option value={10}>10</option>
+                <option value={11}>11</option>
+                <option value={12}>12</option>
+            </TextField>
+        );
+    };
+
+    const renderHouseholdSizeFields = () => {
+
+        const handleHouseMateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+            setHasHouseMates((event.target as HTMLInputElement).value === 'true')
+        };
+
+        const handleHouseHoldSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+            setHouseHoldSize(parseInt(event.target.value) || '');
+        };
+
+        return (
+            <>
+                <FormControl component="fieldset" className={classes.radios}>
+                    <RadioGroup name="houseHoldSize" value={hasHouseMates} onChange={handleHouseMateChange}>
+                        <FormControlLabel value={false} control={<Radio />} label="I live alone" />
+                        <FormControlLabel value={true} control={<Radio />} label="I live with others" />
+                    </RadioGroup>
+                </FormControl>
+                { hasHouseMates &&
+                     <TextField
+                        required
+                        id="houseMateCount"
+                        label="Household size"
+                        className={classNames(classes.row, classes.textField)}
+                        value={houseHoldSize}
+                        onChange={handleHouseHoldSizeChange}
+                        margin="normal"
+                        variant="outlined" />
+               }
+            </>
+        );
+    };
+
+    const renderCalculatorForm = () => {
+        return (
+            <Container className={classes.center}>
+                <div className={classNames(classes.column, classes.section)}>
+                    <TextField
+                        required
+                        id="annualIncome"
+                        label="Total annual gross income (€)"
+                        className={classNames(classes.row, classes.textField)}
+                        value={annualIncome}
+                        onChange={e => setAnnualIncome(Number(e.target.value))}
+                        margin="normal"
+                        variant="outlined" />
+                    { renderSalaryField() }
+                    { renderUsedBenefitMonths() }
+                    <TextField
+                        required
+                        id="housingCosts"
+                        label="Monthly housing costs (€)"
+                        className={classNames(classes.row, classes.textField)}
+                        value={housingCosts}
+                        onChange={e => setHousingCosts(Number(e.target.value))}
+                        margin="normal"
+                        variant="outlined" />
+                    { renderHouseholdSizeFields() }
+                    <Button className={classes.textField} variant="contained" color="primary" onClick={() => {}}>
+                        Calculate
+                    </Button>
+                </div>
+            </Container>
+        )
+    };
+
     return (
         <>
             <HeaderBar />
+            {renderCalculatorForm()}
         </>
     );
 };
 
-const styles = {};
+const useStyles = makeStyles((theme: Theme) =>
+    createStyles({
+        textField: {
+            marginLeft: theme.spacing(1),
+            marginRight: theme.spacing(1),
+            maxWidth: 250,
+        },
+        center: {
+            display: 'flex',
+            justifyContent: 'center',
+        },
+        column: {
+            display: 'flex',
+            flexDirection: 'column',
+        },
+        section: {
+            marginTop: theme.spacing(3),
+        },
+        row: {
+            maxWidth: 500,
+        },
+        button: {
+            height: theme.spacing(7),
+        },
+        radios: {
+            paddingLeft: theme.spacing(1),
+        },
+}));
 
-export default withStyles(styles)(Calculator);
+export default Calculator;

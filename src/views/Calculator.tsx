@@ -13,21 +13,24 @@ import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import HeaderBar from '../components/HeaderBar';
 import Graph from '../components/Graph';
 import classNames from 'classnames';
+import { CalculatorForm } from '../services/types';
+import { generateSalaryDatapoints } from '../services/optimizer';
 
 const Calculator = () => {
     const classes = useStyles();
     const [ annualIncome, setAnnualIncome ] = useState<number | ''>('');
     const [ salaryRow, setSalaryRow ] = useState<number | ''>('');
-    const [ salaryRowType, setSalaryRowType ] = useState<'month' | 'hour'>('month');
+    const [ salaryRowType, setSalaryRowType ] = useState<'monthly' | 'hourly'>('monthly');
     const [ usedMonths, setUsedMonths ] = useState(0);
     const [ housingCosts, setHousingCosts ] = useState<number | ''>('');
     const [ houseHoldSize, setHouseHoldSize ] = useState<number | ''>('');
     const [ hasHouseMates, setHasHouseMates ] = useState(false);
+    const [ graphData, setGraphData ] = useState<number[]>([]);
 
     const renderSalaryField = () => {
 
         const handleTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-            if (event.target.value === 'month' || event.target.value === 'hour') {
+            if (event.target.value === 'monthly' || event.target.value === 'hourly') {
                 setSalaryRowType(event.target.value);
             }
         };
@@ -66,10 +69,10 @@ const Calculator = () => {
                         variant="outlined"
                         type="text"
                     >
-                        <option value="month">
+                        <option value="monthly">
                             € / mo
                         </option>
-                        <option value="hour">
+                        <option value="hourly">
                             € / h
                         </option>
                     </TextField>
@@ -161,6 +164,38 @@ const Calculator = () => {
         );
     };
 
+    const formIsValid = (): boolean => {
+        return false;
+    };
+
+    const getFormData = (): CalculatorForm => {
+        return {
+            grossIncome: typeof annualIncome === 'number'
+                ? annualIncome
+                : 0,
+            salaries: [{
+                type: salaryRowType,
+                amount: typeof salaryRow === 'number'
+                    ? salaryRow
+                    : 0,
+                ...(salaryRowType === 'hourly' && { monthlyHours: 60 })
+            }],
+            usedMonths,
+            housingCosts: typeof housingCosts === 'number'
+                ? housingCosts
+                : 0,
+            houseHoldSize: typeof houseHoldSize === 'number'
+                ? houseHoldSize
+                : 1,
+        };
+    };
+
+    const handleCalculateButton = () => {
+        const form = getFormData();
+        const data = generateSalaryDatapoints(form);
+        data.length && setGraphData(data);
+    }
+
     const renderCalculatorForm = () => {
         return (
             <Container className={classes.center}>
@@ -186,7 +221,12 @@ const Calculator = () => {
                         margin="normal"
                         variant="outlined" />
                     { renderHouseholdSizeFields() }
-                    <Button className={classes.textField} variant="contained" color="primary" onClick={() => {}}>
+                    <Button
+                        className={classes.textField}
+                        variant="contained"
+                        color="primary"
+                        onClick={handleCalculateButton}
+                    >
                         Calculate
                     </Button>
                 </div>
@@ -198,9 +238,12 @@ const Calculator = () => {
         <>
             <HeaderBar />
             {renderCalculatorForm()}
-            <Graph
-                width={600}
-            />
+            { graphData.length &&
+                <Graph
+                    width={600}
+                    data={graphData}
+                />
+            }
         </>
     );
 };

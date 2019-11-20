@@ -5,19 +5,9 @@ import moment from 'moment';
 
 const months = ['Jan','Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-const data = {
-    labels: months.slice(moment().add(-5, 'months').month()),
-    datasets: [
-        {
-            label: '',
-            fill: false,
-            data: [2, 5, 4, 2]
-        }
-    ]
-}
-
 interface OwnProps {
     width: number,
+    data: number[],
 };
 
 type Props = OwnProps;
@@ -25,6 +15,19 @@ type Props = OwnProps;
 const Graph = (props: Props) => {
     const classes = useStyles();
     const { width } = props;
+
+    const data = {
+        labels: months.slice(moment().add(-1, 'months').month()),
+        datasets: [
+            {
+                label: '',
+                fill: false,
+                data: props.data,
+            },
+        ],
+    };
+
+
     return (
         <div className={classes.container}>
             <div className={classes.graph}>

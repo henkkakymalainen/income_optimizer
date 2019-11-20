@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { useState } from 'react';
 import {
     TextField,
@@ -11,6 +11,7 @@ import {
 } from '@material-ui/core';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import HeaderBar from '../components/HeaderBar';
+import Graph from '../components/Graph';
 import classNames from 'classnames';
 
 const Calculator = () => {
@@ -197,6 +198,9 @@ const Calculator = () => {
         <>
             <HeaderBar />
             {renderCalculatorForm()}
+            <Graph
+                width={600}
+            />
         </>
     );
 };

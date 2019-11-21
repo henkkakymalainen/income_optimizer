@@ -10,7 +10,6 @@ import {
     Radio,
 } from '@material-ui/core';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import HeaderBar from '../components/HeaderBar';
 import Graph from '../components/Graph';
 import classNames from 'classnames';
 import { CalculatorForm } from '../services/types';
@@ -236,7 +235,6 @@ const Calculator = () => {
 
     return (
         <>
-            <HeaderBar />
             {renderCalculatorForm()}
             { graphData.length &&
                 <Graph

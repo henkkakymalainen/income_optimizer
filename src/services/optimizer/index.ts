@@ -11,8 +11,15 @@ import moment from 'moment';
 
 const months = ['Jan','Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-// TODO: Just on example, probably not ideal implementation, and not
-// sure at all if this works or not
+export const calculateIncomeUntilNineMonths = (
+    incomeLimits: IncomeLimit[],
+    annualIncome: number,
+) => {
+    const nineMonthLimit = incomeLimits.find(limit => limit.months === 9)!;
+    const incomeLeft = nineMonthLimit.annualIncomeLimit - annualIncome;
+    return Math.max(incomeLeft, 0);
+}
+
 export const calculateRemainingIncomeBeforeNextStep = (
     incomeLimits: IncomeLimit[],
     annualIncome: number
@@ -83,7 +90,7 @@ export const getIncomeProjectionDataset = (form: CalculatorForm): chartjs.ChartD
     const salaryDatasets = {
         data: datapoints,
         label: 'Gross salary YTD',
-        backgroundColor: '#2ff',
+        backgroundColor: 'rgba(255, 99, 132)',
     };
     const benefitDatapoints = getStudentBenefitDataset(
         incomeLimits,
@@ -94,8 +101,8 @@ export const getIncomeProjectionDataset = (form: CalculatorForm): chartjs.ChartD
         '18+'); // FIXME, age not collected currently
     const benefitDatasets = {
         data: benefitDatapoints,
-        label: 'Student benefit',
-        backgroundColor: '#f22',
+        label: 'Student benefits',
+        backgroundColor: 'rgba(54, 162, 235)',
     };
     return {
         labels,

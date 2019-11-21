@@ -22,7 +22,7 @@ export const calculateIncomeUntilNineMonths = (
 
 export const calculateRemainingIncomeBeforeNextStep = (
     incomeLimits: IncomeLimit[],
-    annualIncome: number
+    annualIncome: number,
 ) => {
     const availableMonths = incomeLimits
         .sort((a, b) => a.annualIncomeLimit - b.annualIncomeLimit)
@@ -30,6 +30,20 @@ export const calculateRemainingIncomeBeforeNextStep = (
     return availableMonths.length
         ? availableMonths[0].annualIncomeLimit - annualIncome
         : 0;
+};
+
+export const benefitsToReturn = (
+    incomeLimits: IncomeLimit[],
+    annualIncome: number,
+    usedMonths: number,
+) => {
+    const limitsLeft = incomeLimits
+        .sort((a, b) => a.annualIncomeLimit - b.annualIncomeLimit)
+        .filter(limit => limit.annualIncomeLimit > annualIncome);
+    const availableMonths = limitsLeft.length
+        ? limitsLeft[0].months
+        : 0;
+    return Math.max(usedMonths - availableMonths, 0);
 };
 
 // Meaning benefit months left this year that you actually can use

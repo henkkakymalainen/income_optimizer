@@ -5,6 +5,7 @@ import {
     calculateRemainingIncomeBeforeNextStep,
     getStudentBenefitDataset,
     calculateRemainingBenefitMonths,
+    benefitsToReturn,
 } from '../optimizer';
 import { CalculatorForm, HourlySalary, StandardSalary } from '../types';
 import moment from 'moment';
@@ -258,5 +259,16 @@ describe('getStudentBenefitDataset()', () => {
         expect(dataset).toHaveLength(12 - currentMonth);
         expect(dataset[0]).toBeGreaterThan(0);
         expect(dataset[dataset.length - 1]).toBe(0);
+    });
+});
+
+describe.only('benefitsToReturn()', () => {
+    it('returns 0, if total income class is lower than used months', () => {
+        const result = benefitsToReturn(incomeLimits, 15000, 3);
+        expect(result).toBe(0);
+    });
+    it('returns 2, if total income class is 2 steps higher than allowed', () => {
+        const result = benefitsToReturn(incomeLimits, 15000, 8);
+        expect(result).toBe(2);
     });
 });

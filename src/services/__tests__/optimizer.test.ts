@@ -3,7 +3,7 @@ import {
     hourlyWageToMonthlySalary,
     generateSalaryDatapoints
 } from '../optimizer';
-import { CalculatorForm, HourlySalary, MonthlySalary } from '../types';
+import { CalculatorForm, HourlySalary, StandardSalary } from '../types';
 import moment from 'moment';
 
 describe('hourlyWageToMonthlySalary()', () => {
@@ -11,7 +11,7 @@ describe('hourlyWageToMonthlySalary()', () => {
 
     beforeEach(() => {
         hourlySalary = {
-            salaryType: 'hourly',
+            type: 'hourly',
             monthlyHours: casual.integer(0, 80),
             amount: casual.integer(9, 20),
         };
@@ -27,7 +27,7 @@ describe('generateSalaryDatapoints()', () => {
     let singleSalaryForm: CalculatorForm;
     let doubleSalaryForm: CalculatorForm;
     let hourlySalary: HourlySalary;
-    let monthlySalary: MonthlySalary;
+    let monthlySalary: StandardSalary;
 
     beforeEach(() => {
         hourlySalary = {
@@ -55,19 +55,18 @@ describe('generateSalaryDatapoints()', () => {
         }      
     });
 
-    it.only('calculates it correctly with single salary', () => {
+    it('calculates it correctly with single salary', () => {
         const result = generateSalaryDatapoints(singleSalaryForm);
-        expect(result).toHaveLength(12 - moment().add(-1, 'months').month());
-        expect(result[0]).toBe(singleSalaryForm.grossIncome);
-        expect(result[1]).toBe(singleSalaryForm.grossIncome + monthlySalary.amount);
+        expect(result.datasets).toHaveLength(12 - moment().add(-1, 'months').month());
+        expect(result.labels).toHaveLength(12 - moment().add(-1, 'months').month());
     })
 
     it('calculates it correctly with single salary', () => {
         const result = generateSalaryDatapoints(doubleSalaryForm);
-        expect(result).toHaveLength(12 - moment().add(-1, 'months').month());
-        expect(result[0]).toBe(doubleSalaryForm.grossIncome);
-        expect(result[1]).toBe(doubleSalaryForm.grossIncome + monthlySalary.amount + (hourlySalary.amount * hourlySalary.monthlyHours));
+        expect(result.datasets).toHaveLength(12 - moment().add(-1, 'months').month());
+        expect(result.labels).toHaveLength(12 - moment().add(-1, 'months').month());
+        expect(result.datasets![0].data![0]).toBe(doubleSalaryForm.grossIncome);
+        expect(result.datasets![1].data![0]).toBe(doubleSalaryForm.grossIncome + monthlySalary.amount + (hourlySalary.amount * hourlySalary.monthlyHours));
     });
-        
 });
 

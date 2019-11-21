@@ -15,6 +15,7 @@ import Graph from '../components/Graph';
 import classNames from 'classnames';
 import { CalculatorForm } from '../services/types';
 import { generateSalaryDatapoints } from '../services/optimizer';
+import * as chartjs from 'chart.js';
 
 const Calculator = () => {
     const classes = useStyles();
@@ -25,7 +26,7 @@ const Calculator = () => {
     const [ housingCosts, setHousingCosts ] = useState<number | ''>('');
     const [ houseHoldSize, setHouseHoldSize ] = useState<number | ''>('');
     const [ hasHouseMates, setHasHouseMates ] = useState(false);
-    const [ graphData, setGraphData ] = useState<number[]>([]);
+    const [ graphData, setGraphData ] = useState<chartjs.ChartData>();
 
     const renderSalaryField = () => {
 
@@ -193,7 +194,7 @@ const Calculator = () => {
     const handleCalculateButton = () => {
         const form = getFormData();
         const data = generateSalaryDatapoints(form);
-        data.length && setGraphData(data);
+        data && setGraphData(data);
     }
 
     const renderCalculatorForm = () => {
@@ -238,7 +239,7 @@ const Calculator = () => {
         <>
             <HeaderBar />
             {renderCalculatorForm()}
-            { graphData.length &&
+            { graphData &&
                 <Graph
                     width={600}
                     data={graphData}

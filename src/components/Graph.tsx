@@ -1,32 +1,19 @@
 import * as React from 'react';
 import { Bar } from 'react-chartjs-2';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import moment from 'moment';
-
-const months = ['Jan','Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+import { ChartData } from 'react-chartjs-2';
+import * as chartjs from 'chart.js';
 
 interface OwnProps {
     width: number,
-    data: number[],
+    data: ChartData<chartjs.ChartData>,
 };
 
 type Props = OwnProps;
 
 const Graph = (props: Props) => {
     const classes = useStyles();
-    const { width } = props;
-
-    const data = {
-        labels: months.slice(moment().add(-1, 'months').month()),
-        datasets: [
-            {
-                label: '',
-                fill: false,
-                data: props.data,
-            },
-        ],
-    };
-
+    const { width, data } = props;
 
     return (
         <div className={classes.container}>
@@ -36,7 +23,14 @@ const Graph = (props: Props) => {
                     width={width}
                     height={width * 0.5}
                     options={{
-                        maintainAspectRatio: false,
+                        scales: {
+                            yAxes: [{
+                                stacked: true,
+                            }],
+                            xAxes: [{
+                                stacked: true,
+                            }],
+                        }
                     }}
                     legend={{
                         display: false,

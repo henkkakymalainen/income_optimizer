@@ -40,9 +40,6 @@ const StackedBar = (props: Props) => {
                             }],
                         }
                     }}
-                    legend={{
-                        display: false,
-                    }}
                 />
             </div>
         </div>

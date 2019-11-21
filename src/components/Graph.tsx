@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Line } from 'react-chartjs-2';
+import { Bar } from 'react-chartjs-2';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import moment from 'moment';
 
@@ -31,7 +31,7 @@ const Graph = (props: Props) => {
     return (
         <div className={classes.container}>
             <div className={classes.graph}>
-                <Line
+                <Bar
                     data={data}
                     width={width}
                     height={width * 0.5}

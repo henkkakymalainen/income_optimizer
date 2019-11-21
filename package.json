@@ -5,7 +5,7 @@
   "dependencies": {
     "@material-ui/core": "^4.6.0",
     "@material-ui/styles": "^4.6.0",
-    "@types/chartjs": "^0.0.31",
+    "@types/chart.js": "^2.9.2",
     "@types/classnames": "^2.2.9",
     "@types/history": "^4.7.3",
     "@types/jest": "24.0.20",

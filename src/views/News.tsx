@@ -25,11 +25,12 @@ const News = () => {
             return (
 
               <div key={entry.title}>
-
+                <br></br>
+                <p>Date: {entry.date.toString().substring(0,10)}</p>
                 <h4>{entry.title}</h4>
                 <p>{entry.content}</p>
-                <p>{entry.date.toString().substring(0,10)}</p>
                 <a href={entry.link}>Link to the News</a>
+                <p>___________________________________________</p>
               </div>
             )
           })

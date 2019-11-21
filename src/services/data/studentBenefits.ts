@@ -1,4 +1,6 @@
-interface IncomeLimit {
+import { Age } from '../types';
+
+export interface IncomeLimit {
     months: number,
     annualIncomeLimit: number,
 };
@@ -52,4 +54,45 @@ export const incomeLimits: IncomeLimit[] = [
         months: 12,
         annualIncomeLimit: 8004,
     }
+];
+
+/**
+ *  NOTE: Doesn't take into account "oppimateriaalilisä",
+ *  that'd require parents' incomes as well, 
+ *  too complex for now
+ */
+export interface StudentBenefit {
+    age: Age,
+    amount: number,
+    isGuardian?: boolean,
+    isMarried?: boolean,
+}
+
+export const studentBenefits: StudentBenefit[] = [
+    {
+        age: 'NA',
+        isGuardian: true,
+        amount: 325.28,
+    },
+    {
+        age: 'NA',
+        isMarried: true,
+        amount: 250.28,
+    },
+    {
+        age: '18+',
+        amount: 250.28,
+    },
+    {
+        age: 'u18',
+        amount: 101.74,
+    },
+    {
+        age: '20+',
+        amount: 81.39,
+    },
+    {
+        age: 'u20',
+        amount: 38.66,
+    },
 ];

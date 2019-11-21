@@ -22,7 +22,7 @@ const HeaderBar = () => {
                     Stats
                 </IconButton>
                 <IconButton edge="start" className={classes.menuButton}>
-                    Info
+                    News
                 </IconButton>
                 <IconButton edge="start" className={classes.menuButton}>
                     About

@@ -10,10 +10,24 @@ import {
     Radio,
 } from '@material-ui/core';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import Graph from '../components/Graph';
+
+import StackedBar from '../components/StackedBar';
+import PieChart from '../components/PieChart';
+import StatText from '../components/StatText';
+
 import classNames from 'classnames';
-import { CalculatorForm } from '../services/types';
-import { generateSalaryDatapoints } from '../services/optimizer';
+import { CalculatorForm, Age } from '../services/types';
+import { incomeLimits, studentBenefits } from '../services/data/studentBenefits';
+import {
+    getIncomeProjectionDataset,
+    getIncomeBreakdownDataset,
+    calculateIncomeUntilNineMonths,
+    calculateRemainingBenefitMonths,
+    benefitsToReturn,
+    getMonthlyBenefitAmount,
+} from '../services/optimizer';
+import * as chartjs from 'chart.js';
+import moment from 'moment';
 
 const Calculator = () => {
     const classes = useStyles();
@@ -22,9 +36,14 @@ const Calculator = () => {
     const [ salaryRowType, setSalaryRowType ] = useState<'monthly' | 'hourly'>('monthly');
     const [ usedMonths, setUsedMonths ] = useState(0);
     const [ housingCosts, setHousingCosts ] = useState<number | ''>('');
-    const [ houseHoldSize, setHouseHoldSize ] = useState<number | ''>('');
+    const [ houseHoldSize, setHouseHoldSize ] = useState<number | ''>(1);
     const [ hasHouseMates, setHasHouseMates ] = useState(false);
-    const [ graphData, setGraphData ] = useState<number[]>([]);
+    const [ graphData, setGraphData ] = useState<chartjs.ChartData>();
+    const [ incomeBreakdown, setIncomeBreakdown ] = useState<chartjs.ChartData>();
+    const [ incomeLimit, setIncomeLimit ] = useState<number | null>(null);
+    const [ remainingMonths, setRemainingMonths ] = useState<number | null>(null);
+    const [ monthsToReturn, setMonthsToReturn ] = useState<number>(0);
+    const [ age, setAge ] = useState<Age>('18+');
 
     const renderSalaryField = () => {
 
@@ -164,36 +183,49 @@ const Calculator = () => {
     };
 
     const formIsValid = (): boolean => {
-        return false;
+        return [
+            typeof annualIncome === 'number',
+            typeof salaryRow === 'number',
+            typeof housingCosts === 'number',
+            typeof houseHoldSize === 'number',
+        ].every(fieldIsValid => fieldIsValid)
     };
 
+    // We can force the values to numbers, since this
+    // function is never called before formIsValid() is called.
     const getFormData = (): CalculatorForm => {
         return {
-            grossIncome: typeof annualIncome === 'number'
-                ? annualIncome
-                : 0,
+            grossIncome: annualIncome as number,
             salaries: [{
                 type: salaryRowType,
-                amount: typeof salaryRow === 'number'
-                    ? salaryRow
-                    : 0,
+                amount: salaryRow as number,
                 ...(salaryRowType === 'hourly' && { monthlyHours: 60 })
             }],
             usedMonths,
-            housingCosts: typeof housingCosts === 'number'
-                ? housingCosts
-                : 0,
-            houseHoldSize: typeof houseHoldSize === 'number'
-                ? houseHoldSize
-                : 1,
+            housingCosts: housingCosts as number,
+            houseHoldSize: houseHoldSize as number,
         };
     };
 
     const handleCalculateButton = () => {
+        if (!formIsValid()) return;
         const form = getFormData();
-        const data = generateSalaryDatapoints(form);
-        data.length && setGraphData(data);
-    }
+        const salaryData = getIncomeProjectionDataset(form);
+        const breakdown = getIncomeBreakdownDataset(form);
+        const incomeUntilNineMonthLimit = calculateIncomeUntilNineMonths(incomeLimits, form.grossIncome);
+        const remainingBenefitMonths = calculateRemainingBenefitMonths(
+            incomeLimits,
+            form.grossIncome,
+            form.usedMonths,
+            moment());
+        const benefitMonthsToReturn = benefitsToReturn(incomeLimits, form.grossIncome, form.usedMonths);
+        console.log(`How much can I still make and still withdraw 9 months of benefits? ${incomeUntilNineMonthLimit}`);
+        salaryData && setGraphData(salaryData);
+        breakdown && setIncomeBreakdown(breakdown);
+        setIncomeLimit(incomeUntilNineMonthLimit);
+        setRemainingMonths(remainingBenefitMonths);
+        setMonthsToReturn(benefitMonthsToReturn);
+    };
 
     const renderCalculatorForm = () => {
         return (
@@ -206,6 +238,7 @@ const Calculator = () => {
                         className={classNames(classes.row, classes.textField)}
                         value={annualIncome}
                         onChange={e => setAnnualIncome(Number(e.target.value))}
+                        color="primary"
                         margin="normal"
                         variant="outlined" />
                     { renderSalaryField() }
@@ -225,6 +258,7 @@ const Calculator = () => {
                         variant="contained"
                         color="primary"
                         onClick={handleCalculateButton}
+                        disabled={!formIsValid()}
                     >
                         Calculate
                     </Button>
@@ -234,15 +268,44 @@ const Calculator = () => {
     };
 
     return (
-        <>
+        <div>
+
+
             {renderCalculatorForm()}
-            { graphData.length &&
-                <Graph
+            { incomeBreakdown &&
+                <PieChart
                     width={600}
-                    data={graphData}
+                    data={incomeBreakdown}
+                    title="Income breakdown"
                 />
             }
-        </>
+            { graphData &&
+                <StackedBar
+                    width={600}
+                    data={graphData}
+                    title="Income projections until end of year"
+                />
+            }
+            { typeof incomeLimit === 'number' &&
+                <StatText
+                    label="Salary left to earn to still be able to withdraw 9 months of student benefits:"
+                    value={`${incomeLimit} €`}
+                />
+            }
+            { typeof remainingMonths === 'number' &&
+                <StatText
+                    label="Number of months you can still withdraw benefits from this year:"
+                    value={`${remainingMonths}`}
+                />
+            }
+            { monthsToReturn &&
+                <StatText
+                    label="You have withdrawn benefits from too many months. You must return them from"
+                    value={`${monthsToReturn} months = ${monthsToReturn * getMonthlyBenefitAmount(studentBenefits, age)} €`}
+                />
+            }
+
+        </div>
     );
 };
 

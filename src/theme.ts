@@ -1,7 +1,48 @@
 import createMuiTheme from '@material-ui/core/styles/createMuiTheme';
+import { PaletteColor } from '@material-ui/core/styles/createPalette';
 import { createStyles } from '@material-ui/core';
 
+declare module '@material-ui/core/styles/createPalette' {
+  interface Palette {
+    blue: PaletteColor,
+    pink: PaletteColor,
+    yellow: PaletteColor,
+  }
+
+  interface PaletteOptions {
+    blue: SimplePaletteColorOptions,
+    pink: SimplePaletteColorOptions,
+    yellow: SimplePaletteColorOptions,
+  }
+}
+
+const blue: PaletteColor = {
+  main: '#35A2EA',
+  light: '#89C0E5',
+  dark: '#0378C6',
+  contrastText: '#fff',
+};
+
+const pink: PaletteColor = {
+  main: '#FF6385',
+  light: '#FCBDCB',
+  dark: '#CC1E44',
+  contrastText: '#fff',
+}
+
+const yellow: PaletteColor = {
+  main: '#FFCC56',
+  light: '#FCE4AB',
+  dark: '#E09D00',
+  contrastText: '#fff',
+}
+
 export const theme = createMuiTheme({
+    palette: {
+        blue,
+        pink,
+        yellow,
+    },
     spacing: 8,
     typography: {
         fontFamily: '"Roboto", "Arial", sans-serif',

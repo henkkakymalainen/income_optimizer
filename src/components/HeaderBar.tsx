@@ -1,15 +1,19 @@
 import React from 'react';
-import { withStyles, WithStyles } from '@material-ui/core';
+import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 
-type Props = WithStyles<typeof styles>;
-
-const HeaderBar = (props: Props) => {
-    const { classes } = props;
+const HeaderBar = () => {
+    const classes = useStyles();
     return (
-        <AppBar position="static">
+        <AppBar
+            position="static"
+            classes={{
+                colorPrimary: classes.primary
+            }}
+            color="primary"
+        >
             <Toolbar>
                 <IconButton edge="start" className={classes.menuButton}>
                     Calculator
@@ -28,11 +32,15 @@ const HeaderBar = (props: Props) => {
     );
 };
 
-const styles = {
-    menuButton: {
-        marginRight: 8,
-        color: '#fafafa',
-    },
-};
+const useStyles = makeStyles((theme: Theme) =>
+    createStyles({
+        primary: {
+            backgroundColor: theme.palette.blue.dark,
+        },
+        menuButton: {
+            marginRight: 8,
+            color: '#fafafa',
+        },
+}));
 
-export default withStyles(styles)(HeaderBar);
+export default HeaderBar;

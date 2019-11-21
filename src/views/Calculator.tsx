@@ -9,7 +9,7 @@ import {
     FormControlLabel,
     Radio,
 } from '@material-ui/core';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import { createStyles, makeStyles, Theme, useTheme } from '@material-ui/core/styles';
 import HeaderBar from '../components/HeaderBar';
 import StackedBar from '../components/StackedBar';
 import PieChart from '../components/PieChart';
@@ -25,6 +25,7 @@ import * as chartjs from 'chart.js';
 
 const Calculator = () => {
     const classes = useStyles();
+    const theme = useTheme();
     const [ annualIncome, setAnnualIncome ] = useState<number | ''>('');
     const [ salaryRow, setSalaryRow ] = useState<number | ''>('');
     const [ salaryRowType, setSalaryRowType ] = useState<'monthly' | 'hourly'>('monthly');
@@ -219,6 +220,7 @@ const Calculator = () => {
                         className={classNames(classes.row, classes.textField)}
                         value={annualIncome}
                         onChange={e => setAnnualIncome(Number(e.target.value))}
+                        color="primary"
                         margin="normal"
                         variant="outlined" />
                     { renderSalaryField() }

@@ -9,10 +9,11 @@ import {
     FormControlLabel,
     Radio,
 } from '@material-ui/core';
-import { createStyles, makeStyles, Theme, useTheme } from '@material-ui/core/styles';
+import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import HeaderBar from '../components/HeaderBar';
 import StackedBar from '../components/StackedBar';
 import PieChart from '../components/PieChart';
+import StatText from '../components/StatText';
 import classNames from 'classnames';
 import { CalculatorForm } from '../services/types';
 import { incomeLimits } from '../services/data/studentBenefits';
@@ -20,12 +21,13 @@ import {
     getIncomeProjectionDataset,
     getIncomeBreakdownDataset,
     calculateIncomeUntilNineMonths,
+    calculateRemainingBenefitMonths,
 } from '../services/optimizer';
 import * as chartjs from 'chart.js';
+import moment from 'moment';
 
 const Calculator = () => {
     const classes = useStyles();
-    const theme = useTheme();
     const [ annualIncome, setAnnualIncome ] = useState<number | ''>('');
     const [ salaryRow, setSalaryRow ] = useState<number | ''>('');
     const [ salaryRowType, setSalaryRowType ] = useState<'monthly' | 'hourly'>('monthly');
@@ -35,6 +37,8 @@ const Calculator = () => {
     const [ hasHouseMates, setHasHouseMates ] = useState(false);
     const [ graphData, setGraphData ] = useState<chartjs.ChartData>();
     const [ incomeBreakdown, setIncomeBreakdown ] = useState<chartjs.ChartData>();
+    const [ incomeLimit, setIncomeLimit ] = useState<number | null>(null);
+    const [ remainingMonths, setRemainingMonths ] = useState<number | null>(null);
 
     const renderSalaryField = () => {
 
@@ -204,9 +208,16 @@ const Calculator = () => {
         const salaryData = getIncomeProjectionDataset(form);
         const breakdown = getIncomeBreakdownDataset(form);
         const incomeUntilNineMonthLimit = calculateIncomeUntilNineMonths(incomeLimits, form.grossIncome);
+        const remainingBenefitMonths = calculateRemainingBenefitMonths(
+            incomeLimits,
+            form.grossIncome,
+            usedMonths,
+            moment());
         console.log(`How much can I still make and still withdraw 9 months of benefits? ${incomeUntilNineMonthLimit}`);
         salaryData && setGraphData(salaryData);
         breakdown && setIncomeBreakdown(breakdown);
+        setIncomeLimit(incomeUntilNineMonthLimit);
+        setRemainingMonths(remainingBenefitMonths);
     }
 
     const renderCalculatorForm = () => {
@@ -253,10 +264,6 @@ const Calculator = () => {
         <>
             <HeaderBar />
             {renderCalculatorForm()}
-            {
-            // How much more can I make to not lose any benefits (or
-            //    to withdraw 9 months of benefits)
-            }
             { incomeBreakdown &&
                 <PieChart
                     width={600}
@@ -269,6 +276,18 @@ const Calculator = () => {
                     width={600}
                     data={graphData}
                     title="Income projections until end of year"
+                />
+            }
+            { typeof incomeLimit === 'number' &&
+                <StatText
+                    label="Salary left to earn to still be able to withdraw 9 months of student benefits:"
+                    value={`${incomeLimit} €`}
+                />
+            }
+            { typeof remainingMonths === 'number' &&
+                <StatText
+                    label="Number of months you can still withdraw benefits from this year:"
+                    value={`${remainingMonths}`}
                 />
             }
         </>

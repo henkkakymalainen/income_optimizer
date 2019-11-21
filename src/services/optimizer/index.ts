@@ -1,5 +1,10 @@
-import { incomeLimits } from '../data/studentBenefits';
-import { CalculatorForm, HourlySalary, StandardSalary } from '../types';
+import {
+    IncomeLimit,
+    StudentBenefit,
+    incomeLimits,
+    studentBenefits,
+} from '../data/studentBenefits';
+import { CalculatorForm, HourlySalary, StandardSalary, Age } from '../types';
 import { ChartData } from 'react-chartjs-2';
 import * as chartjs from 'chart.js';
 import moment from 'moment';
@@ -8,7 +13,10 @@ const months = ['Jan','Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'O
 
 // TODO: Just on example, probably not ideal implementation, and not
 // sure at all if this works or not
-export const calculateRemainingIncomeBeforeNextStep = (annualIncome: number) => {
+export const calculateRemainingIncomeBeforeNextStep = (
+    incomeLimits: IncomeLimit[],
+    annualIncome: number
+) => {
     const availableMonths = incomeLimits
         .sort((a, b) => a.annualIncomeLimit - b.annualIncomeLimit)
         .filter(limit => limit.annualIncomeLimit > annualIncome);
@@ -17,6 +25,14 @@ export const calculateRemainingIncomeBeforeNextStep = (annualIncome: number) => 
         : 0;
 };
 
+export const calculateRemainingBenefitMonths = (
+    incomeLimits: IncomeLimit[],
+    annualIncome: number,
+) => incomeLimits
+    .sort((a, b) => a.annualIncomeLimit - b.annualIncomeLimit)
+    .filter(limit => limit.annualIncomeLimit > annualIncome)
+    .length;
+
 export const hourlyWageToMonthlySalary = (salary: HourlySalary): StandardSalary => {
     return {
         amount: salary.monthlyHours * salary.amount,
@@ -24,26 +40,82 @@ export const hourlyWageToMonthlySalary = (salary: HourlySalary): StandardSalary 
     };
 };
 
-export const generateSalaryDatapoints = (form: CalculatorForm): chartjs.ChartData => {
-    const { grossIncome, salaries } = form;
+export const getStudentBenefitDataset = (
+    incomeLimits: IncomeLimit[],
+    studentBenefits: StudentBenefit[],
+    annualIncome: number,
+    monthlyIncome: number,
+    usedBenefitMonths: number,
+    ageGroup: Age,
+    isGuardian?: boolean,
+    isMarried?: boolean,
+): number[] => {
+    const previousMonth = moment().month();
+    const dataset = new Array(12 - previousMonth).fill(0);
+    return dataset.map((_, index) => {
+        const remainingBenefitMonths = calculateRemainingBenefitMonths(
+            incomeLimits,
+            annualIncome + index * monthlyIncome);
+        if (usedBenefitMonths >= 12 ||
+            !remainingBenefitMonths ||
+            remainingBenefitMonths - (usedBenefitMonths + index) <= 0) return 0;
+        else if (isGuardian) return studentBenefits.find(b => b.isGuardian)!.amount;
+        else if (isMarried) return studentBenefits.find(b => b.isMarried)!.amount;
+        else if (ageGroup === '18+') return studentBenefits.find(b => b.age === '18+')!.amount;
+        else if (ageGroup === 'u18') return studentBenefits.find(b => b.age === 'u18')!.amount;
+        else if (ageGroup === '20+') return studentBenefits.find(b => b.age === '20+')!.amount;
+        else if (ageGroup === 'u20') return studentBenefits.find(b => b.age === 'u20')!.amount;
+        return 0;
+    });
+};
+
+export const getIncomeProjectionDataset = (form: CalculatorForm): chartjs.ChartData => {
+    const { grossIncome, salaries, usedMonths } = form;
     const monthlySalaries = salaries
         .filter(salary => salary.type === 'hourly')
         .map(salary => salary as HourlySalary) // Gotta force this type for the compiler
         .map(hourlyWageToMonthlySalary)
         .concat(salaries.filter(salary => salary.type === 'monthly'))
     const singleMonthsIncome = monthlySalaries.reduce((total, salary) => total + salary.amount, 0);
-    const currentMonth = moment().add(-1, 'months').month();
+    const currentMonth = moment().month();
     const labels = months.slice(currentMonth);
-    const datapoints = new Array<number>(12 - currentMonth).fill(0);
-    const datasets = datapoints.map((_, index) => {
-        return {
-            data: [grossIncome + index * singleMonthsIncome],
-            label: 'salary',
-            backgroundColor: '#7ff',
-        };
-    });
+    const datapoints = new Array<number>(12 - currentMonth).fill(singleMonthsIncome);
+    const salaryDatasets = {
+        data: datapoints,
+        label: 'Gross salary YTD',
+        backgroundColor: '#2ff',
+    };
+    const benefitDatapoints = getStudentBenefitDataset(
+        incomeLimits,
+        studentBenefits,
+        grossIncome,
+        singleMonthsIncome,
+        usedMonths,
+        '18+'); // FIXME, age not collected currently
+    const benefitDatasets = {
+        data: benefitDatapoints,
+        label: 'Student benefit',
+        backgroundColor: '#f22',
+    };
     return {
         labels,
-        datasets,
+        datasets: [salaryDatasets, benefitDatasets],
     }
+};
+
+export const getIncomeBreakdownDataset = (form: CalculatorForm): chartjs.ChartData => {
+    const age = '18+'; // FIXME, not included in the form currently
+    const monthlyBenefit = studentBenefits.find(b => b.age === age)!.amount;
+    // TODO: Add housing benefits
+    return {
+        labels: [
+            'Salary',
+            'Student benefits',
+            'Housing benefits',
+        ],
+        datasets: [{
+            data: [form.grossIncome, monthlyBenefit * form.usedMonths, 450],
+            backgroundColor: ['rgba(255, 99, 132)', 'rgba(54, 162, 235)', 'rgba(255, 205, 86)'],
+        }],
+    };
 };

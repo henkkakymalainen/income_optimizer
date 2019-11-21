@@ -11,10 +11,14 @@ import {
 } from '@material-ui/core';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import HeaderBar from '../components/HeaderBar';
-import Graph from '../components/Graph';
+import StackedBar from '../components/StackedBar';
+import PieChart from '../components/PieChart';
 import classNames from 'classnames';
 import { CalculatorForm } from '../services/types';
-import { generateSalaryDatapoints } from '../services/optimizer';
+import {
+    getIncomeProjectionDataset,
+    getIncomeBreakdownDataset,
+} from '../services/optimizer';
 import * as chartjs from 'chart.js';
 
 const Calculator = () => {
@@ -27,6 +31,7 @@ const Calculator = () => {
     const [ houseHoldSize, setHouseHoldSize ] = useState<number | ''>('');
     const [ hasHouseMates, setHasHouseMates ] = useState(false);
     const [ graphData, setGraphData ] = useState<chartjs.ChartData>();
+    const [ incomeBreakdown, setIncomeBreakdown ] = useState<chartjs.ChartData>();
 
     const renderSalaryField = () => {
 
@@ -193,8 +198,10 @@ const Calculator = () => {
 
     const handleCalculateButton = () => {
         const form = getFormData();
-        const data = generateSalaryDatapoints(form);
-        data && setGraphData(data);
+        const salaryData = getIncomeProjectionDataset(form);
+        const breakdown = getIncomeBreakdownDataset(form);
+        salaryData && setGraphData(salaryData);
+        breakdown && setIncomeBreakdown(breakdown);
     }
 
     const renderCalculatorForm = () => {
@@ -239,10 +246,24 @@ const Calculator = () => {
         <>
             <HeaderBar />
             {renderCalculatorForm()}
+            {
+            // 1. whole year's income breakdown
+            // 2. Projected income for the coming months until EOY
+            // 3. How much more can I make to not lose any benefits (or
+            //    to withdraw 9 months of benefits)
+            }
+            { incomeBreakdown &&
+                <PieChart
+                    width={600}
+                    data={incomeBreakdown}
+                    title="Income breakdown"
+                />
+            }
             { graphData &&
-                <Graph
+                <StackedBar
                     width={600}
                     data={graphData}
+                    title="Income projections until end of year"
                 />
             }
         </>

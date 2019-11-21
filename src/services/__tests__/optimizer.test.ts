@@ -4,6 +4,7 @@ import {
     getIncomeProjectionDataset,
     calculateRemainingIncomeBeforeNextStep,
     getStudentBenefitDataset,
+    calculateRemainingBenefitMonths,
 } from '../optimizer';
 import { CalculatorForm, HourlySalary, StandardSalary } from '../types';
 import moment from 'moment';
@@ -23,6 +24,40 @@ describe('calculateRemainingIncomeBeforeNextStep()', () => {
         expect(result).toBe(14619 - 14500);
     })
 });
+
+describe('calculateRemainingBenefitMonths()', () => {
+    let annualIncome: number;
+
+    beforeEach(() => {
+        annualIncome = casual.integer(13500, 14500);
+    });
+
+    it('returns one, if it is november and not all months have been used', () => {
+        annualIncome = 14500;
+        const result = calculateRemainingBenefitMonths(incomeLimits, annualIncome, 0, moment().month(10));
+        expect(result).toBe(1);
+    });
+    it('returns zero, if all months have been used', () => {
+        // Hypothetical situation, since you can't really use 12 months
+        // in 8 months actually. Gotta make sure the function works
+        const result = calculateRemainingBenefitMonths(incomeLimits, annualIncome, 12, moment().month(8));
+        expect(result).toBe(0);
+    });
+    it('returns zero, if income exceeds income limit table', () => {
+        annualIncome = 50000;
+        const result = calculateRemainingBenefitMonths(incomeLimits, annualIncome, 0, moment().month(2));
+        expect(result).toBe(0);
+    });
+    it('returns zero, if it is December already', () => {
+        const result = calculateRemainingBenefitMonths(incomeLimits, annualIncome, 0, moment().month(11));
+        expect(result).toBe(0);
+    });
+    it('returns three, if it is August, and income limits only allow 3 more months, even though less than 9 months have been used', () => {
+        const result = calculateRemainingBenefitMonths(incomeLimits, 14000, 4, moment().month(7));
+        expect(result).toBe(3);
+    });
+});
+
 
 describe('hourlyWageToMonthlySalary()', () => {
     let hourlySalary: HourlySalary;
@@ -220,7 +255,6 @@ describe('getStudentBenefitDataset()', () => {
             monthlyIncome,
             usedBenefitMonths,
             '18+');
-        console.log(dataset)
         expect(dataset).toHaveLength(12 - currentMonth);
         expect(dataset[0]).toBeGreaterThan(0);
         expect(dataset[dataset.length - 1]).toBe(0);

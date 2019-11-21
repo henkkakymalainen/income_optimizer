@@ -32,13 +32,21 @@ export const calculateRemainingIncomeBeforeNextStep = (
         : 0;
 };
 
+// Meaning benefit months left this year that you actually can use
 export const calculateRemainingBenefitMonths = (
     incomeLimits: IncomeLimit[],
     annualIncome: number,
-) => incomeLimits
-    .sort((a, b) => a.annualIncomeLimit - b.annualIncomeLimit)
-    .filter(limit => limit.annualIncomeLimit > annualIncome)
-    .length;
+    usedMonths: number,
+    date: moment.Moment,
+) => {
+    const availableMonths = incomeLimits
+        .sort((a, b) => a.annualIncomeLimit - b.annualIncomeLimit)
+        .filter(limit => limit.annualIncomeLimit > annualIncome)
+        .length;
+    const monthsLeftThisYear = 11 - moment(date).month();
+    const unusedMonths = Math.max(availableMonths - usedMonths, 0);
+    return Math.min(unusedMonths, monthsLeftThisYear);
+};
 
 export const hourlyWageToMonthlySalary = (salary: HourlySalary): StandardSalary => {
     return {
@@ -57,15 +65,15 @@ export const getStudentBenefitDataset = (
     isGuardian?: boolean,
     isMarried?: boolean,
 ): number[] => {
-    const previousMonth = moment().month();
-    const dataset = new Array(12 - previousMonth).fill(0);
+    const currentMonth = moment().month();
+    const dataset = new Array(12 - currentMonth).fill(0);
     return dataset.map((_, index) => {
         const remainingBenefitMonths = calculateRemainingBenefitMonths(
             incomeLimits,
-            annualIncome + index * monthlyIncome);
-        if (usedBenefitMonths >= 12 ||
-            !remainingBenefitMonths ||
-            remainingBenefitMonths - (usedBenefitMonths + index) <= 0) return 0;
+            annualIncome + index * monthlyIncome,
+            usedBenefitMonths + index,
+            moment());
+        if (remainingBenefitMonths <= 0) return 0;
         else if (isGuardian) return studentBenefits.find(b => b.isGuardian)!.amount;
         else if (isMarried) return studentBenefits.find(b => b.isMarried)!.amount;
         else if (ageGroup === '18+') return studentBenefits.find(b => b.age === '18+')!.amount;

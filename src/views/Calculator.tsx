@@ -15,9 +15,11 @@ import StackedBar from '../components/StackedBar';
 import PieChart from '../components/PieChart';
 import classNames from 'classnames';
 import { CalculatorForm } from '../services/types';
+import { incomeLimits } from '../services/data/studentBenefits';
 import {
     getIncomeProjectionDataset,
     getIncomeBreakdownDataset,
+    calculateIncomeUntilNineMonths,
 } from '../services/optimizer';
 import * as chartjs from 'chart.js';
 
@@ -28,7 +30,7 @@ const Calculator = () => {
     const [ salaryRowType, setSalaryRowType ] = useState<'monthly' | 'hourly'>('monthly');
     const [ usedMonths, setUsedMonths ] = useState(0);
     const [ housingCosts, setHousingCosts ] = useState<number | ''>('');
-    const [ houseHoldSize, setHouseHoldSize ] = useState<number | ''>('');
+    const [ houseHoldSize, setHouseHoldSize ] = useState<number | ''>(1);
     const [ hasHouseMates, setHasHouseMates ] = useState(false);
     const [ graphData, setGraphData ] = useState<chartjs.ChartData>();
     const [ incomeBreakdown, setIncomeBreakdown ] = useState<chartjs.ChartData>();
@@ -171,35 +173,37 @@ const Calculator = () => {
     };
 
     const formIsValid = (): boolean => {
-        return false;
+        return [
+            typeof annualIncome === 'number',
+            typeof salaryRow === 'number',
+            typeof housingCosts === 'number',
+            typeof houseHoldSize === 'number',
+        ].every(fieldIsValid => fieldIsValid)
     };
 
+    // We can force the values to numbers, since this
+    // function is never called before formIsValid() is called.
     const getFormData = (): CalculatorForm => {
         return {
-            grossIncome: typeof annualIncome === 'number'
-                ? annualIncome
-                : 0,
+            grossIncome: annualIncome as number,
             salaries: [{
                 type: salaryRowType,
-                amount: typeof salaryRow === 'number'
-                    ? salaryRow
-                    : 0,
+                amount: salaryRow as number,
                 ...(salaryRowType === 'hourly' && { monthlyHours: 60 })
             }],
             usedMonths,
-            housingCosts: typeof housingCosts === 'number'
-                ? housingCosts
-                : 0,
-            houseHoldSize: typeof houseHoldSize === 'number'
-                ? houseHoldSize
-                : 1,
+            housingCosts: housingCosts as number,
+            houseHoldSize: houseHoldSize as number,
         };
     };
 
     const handleCalculateButton = () => {
+        if (!formIsValid()) return;
         const form = getFormData();
         const salaryData = getIncomeProjectionDataset(form);
         const breakdown = getIncomeBreakdownDataset(form);
+        const incomeUntilNineMonthLimit = calculateIncomeUntilNineMonths(incomeLimits, form.grossIncome);
+        console.log(`How much can I still make and still withdraw 9 months of benefits? ${incomeUntilNineMonthLimit}`);
         salaryData && setGraphData(salaryData);
         breakdown && setIncomeBreakdown(breakdown);
     }
@@ -234,6 +238,7 @@ const Calculator = () => {
                         variant="contained"
                         color="primary"
                         onClick={handleCalculateButton}
+                        disabled={!formIsValid()}
                     >
                         Calculate
                     </Button>
@@ -247,9 +252,7 @@ const Calculator = () => {
             <HeaderBar />
             {renderCalculatorForm()}
             {
-            // 1. whole year's income breakdown
-            // 2. Projected income for the coming months until EOY
-            // 3. How much more can I make to not lose any benefits (or
+            // How much more can I make to not lose any benefits (or
             //    to withdraw 9 months of benefits)
             }
             { incomeBreakdown &&

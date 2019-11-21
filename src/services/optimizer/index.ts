@@ -106,9 +106,9 @@ export const getIncomeProjectionDataset = (form: CalculatorForm): chartjs.ChartD
         .map(hourlyWageToMonthlySalary)
         .concat(salaries.filter(salary => salary.type === 'monthly'))
     const singleMonthsIncome = monthlySalaries.reduce((total, salary) => total + salary.amount, 0);
-    const currentMonth = moment().month();
-    const labels = months.slice(currentMonth);
-    const datapoints = new Array<number>(12 - currentMonth).fill(singleMonthsIncome);
+    const nextMonth = moment().add(1, 'months').month();
+    const labels = months.slice(nextMonth);
+    const datapoints = new Array<number>(12 - nextMonth).fill(singleMonthsIncome);
     const salaryDatasets = {
         data: datapoints,
         label: 'Gross salary YTD',
@@ -143,8 +143,12 @@ export const getIncomeBreakdownDataset = (form: CalculatorForm): chartjs.ChartDa
             'Housing benefits',
         ],
         datasets: [{
-            data: [form.grossIncome, monthlyBenefit * form.usedMonths, 450],
+            data: [form.grossIncome, monthlyBenefit * form.usedMonths, 0], // FIXME, housing benefits
             backgroundColor: ['rgba(255, 99, 132)', 'rgba(54, 162, 235)', 'rgba(255, 205, 86)'],
         }],
     };
+};
+
+export const getMonthlyBenefitAmount = (studentBenefits: StudentBenefit[], age: Age): number => {
+    return studentBenefits.find(b => b.age === age)!.amount;
 };

@@ -15,13 +15,15 @@ import StackedBar from '../components/StackedBar';
 import PieChart from '../components/PieChart';
 import StatText from '../components/StatText';
 import classNames from 'classnames';
-import { CalculatorForm } from '../services/types';
-import { incomeLimits } from '../services/data/studentBenefits';
+import { CalculatorForm, Age } from '../services/types';
+import { incomeLimits, studentBenefits } from '../services/data/studentBenefits';
 import {
     getIncomeProjectionDataset,
     getIncomeBreakdownDataset,
     calculateIncomeUntilNineMonths,
     calculateRemainingBenefitMonths,
+    benefitsToReturn,
+    getMonthlyBenefitAmount,
 } from '../services/optimizer';
 import * as chartjs from 'chart.js';
 import moment from 'moment';
@@ -39,6 +41,8 @@ const Calculator = () => {
     const [ incomeBreakdown, setIncomeBreakdown ] = useState<chartjs.ChartData>();
     const [ incomeLimit, setIncomeLimit ] = useState<number | null>(null);
     const [ remainingMonths, setRemainingMonths ] = useState<number | null>(null);
+    const [ monthsToReturn, setMonthsToReturn ] = useState<number>(0);
+    const [ age, setAge ] = useState<Age>('18+');
 
     const renderSalaryField = () => {
 
@@ -211,14 +215,16 @@ const Calculator = () => {
         const remainingBenefitMonths = calculateRemainingBenefitMonths(
             incomeLimits,
             form.grossIncome,
-            usedMonths,
+            form.usedMonths,
             moment());
+        const benefitMonthsToReturn = benefitsToReturn(incomeLimits, form.grossIncome, form.usedMonths);
         console.log(`How much can I still make and still withdraw 9 months of benefits? ${incomeUntilNineMonthLimit}`);
         salaryData && setGraphData(salaryData);
         breakdown && setIncomeBreakdown(breakdown);
         setIncomeLimit(incomeUntilNineMonthLimit);
         setRemainingMonths(remainingBenefitMonths);
-    }
+        setMonthsToReturn(benefitMonthsToReturn);
+    };
 
     const renderCalculatorForm = () => {
         return (
@@ -261,7 +267,7 @@ const Calculator = () => {
     };
 
     return (
-        <>
+        <div>
             <HeaderBar />
             {renderCalculatorForm()}
             { incomeBreakdown &&
@@ -290,7 +296,14 @@ const Calculator = () => {
                     value={`${remainingMonths}`}
                 />
             }
-        </>
+            { monthsToReturn &&
+                <StatText
+                    label="You have withdrawn benefits from too many months. You must return them from"
+                    value={`${monthsToReturn} months = ${monthsToReturn * getMonthlyBenefitAmount(studentBenefits, age)} €`}
+                />
+            }
+
+        </div>
     );
 };
 

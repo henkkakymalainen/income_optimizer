@@ -111,17 +111,16 @@ describe('getIncomeProjectionDataset()', () => {
 
     it('calculates it correctly with single salary', () => {
         const result = getIncomeProjectionDataset(singleSalaryForm);
-        expect(result.datasets).toHaveLength(12 - moment().month());
-        expect(result.labels).toHaveLength(12 - moment().month());
+        expect(result.datasets![0].data!).toHaveLength(12 - moment().add(1, 'months').month());
+        expect(result.labels).toHaveLength(12 - moment().add(1, 'months').month());
         expect(result.datasets![0].data![0]).toBe(monthlySalary.amount);
     })
 
     it('calculates it correctly with two salaries', () => {
         const result = getIncomeProjectionDataset(doubleSalaryForm);
-        expect(result.datasets).toHaveLength(12 - moment().month());
-        expect(result.labels).toHaveLength(12 - moment().month());
+        expect(result.datasets![0].data!).toHaveLength(12 - moment().add(1, 'months').month());
+        expect(result.labels).toHaveLength(12 - moment().add(1, 'months').month());
         expect(result.datasets![0].data![0]).toBe(monthlySalary.amount + (hourlySalary.amount * hourlySalary.monthlyHours));
-        expect(result.datasets![0].data![1]).toBe(monthlySalary.amount + (hourlySalary.amount * hourlySalary.monthlyHours));
     });
 });
 
@@ -262,7 +261,7 @@ describe('getStudentBenefitDataset()', () => {
     });
 });
 
-describe.only('benefitsToReturn()', () => {
+describe('benefitsToReturn()', () => {
     it('returns 0, if total income class is lower than used months', () => {
         const result = benefitsToReturn(incomeLimits, 15000, 3);
         expect(result).toBe(0);

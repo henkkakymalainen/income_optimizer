@@ -1,5 +1,6 @@
 import { db } from './index';
 import { CalculatorForm } from '../types';
+import moment from 'moment';
 
 export const storeCalculation = async (form: CalculatorForm) => {
     const ref = db.collection('queries').doc();
@@ -7,5 +8,6 @@ export const storeCalculation = async (form: CalculatorForm) => {
     await ref.set({
         ...form,
         id: ref.id,
+        timestamp: moment().toISOString(),
     });
 };

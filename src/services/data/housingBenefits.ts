@@ -1,4 +1,5 @@
-type CityGroup = 'I' | 'II' | 'III' | 'IV';
+import { CityGroup } from '../types';
+
 export interface HousingBenefitIncomeLimit {
     adults: number,
     kids: number,
@@ -588,77 +589,77 @@ export const maximumHousingBenefits: HousingBenefitMax[] = [
     {
         houseHoldSize: 2,
         cityGroup: 'I',
-        maxBenefit: 516,
+        maxBenefit: 746,
     },
     {
         houseHoldSize: 3,
         cityGroup: 'I',
-        maxBenefit: 516,
+        maxBenefit: 951,
     },
     {
         houseHoldSize: 4,
         cityGroup: 'I',
-        maxBenefit: 516,
+        maxBenefit: 1111,
     },
     {
         houseHoldSize: 1,
         cityGroup: 'II',
-        maxBenefit: 516,
+        maxBenefit: 499,
     },
     {
         houseHoldSize: 2,
         cityGroup: 'II',
-        maxBenefit: 516,
+        maxBenefit: 717,
     },
     {
         houseHoldSize: 3,
         cityGroup: 'II',
-        maxBenefit: 516,
+        maxBenefit: 903,
     },
     {
         houseHoldSize: 4,
         cityGroup: 'II',
-        maxBenefit: 516,
+        maxBenefit: 1054,
     },
     {
         houseHoldSize: 1,
         cityGroup: 'III',
-        maxBenefit: 516,
+        maxBenefit: 396,
     },
     {
         houseHoldSize: 2,
         cityGroup: 'III',
-        maxBenefit: 516,
+        maxBenefit: 579,
     },
     {
         houseHoldSize: 3,
         cityGroup: 'III',
-        maxBenefit: 516,
+        maxBenefit: 734,
     },
     {
         houseHoldSize: 4,
         cityGroup: 'III',
-        maxBenefit: 516,
+        maxBenefit: 869,
     },
     {
         houseHoldSize: 1,
         cityGroup: 'IV',
-        maxBenefit: 516,
+        maxBenefit: 349,
     },
     {
         houseHoldSize: 2,
         cityGroup: 'IV',
-        maxBenefit: 516,
+        maxBenefit: 509,
     },
     {
         houseHoldSize: 3,
         cityGroup: 'IV',
-        maxBenefit: 516,
+        maxBenefit: 651,
     },
     {
         houseHoldSize: 4,
         cityGroup: 'IV',
-        maxBenefit: 516,
+        maxBenefit: 775,
     },
 ];
 

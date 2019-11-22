@@ -28,3 +28,5 @@ export interface CalculatorForm {
  *   - NA: doesn't affect benefit amount
  */
 export type Age = 'u18' | 'u20' | '20+' | '18+' | 'NA';
+
+export type CityGroup = 'I' | 'II' | 'III' | 'IV';

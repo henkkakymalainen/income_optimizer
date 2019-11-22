@@ -218,7 +218,7 @@ const Calculator = () => {
                      <TextField
                         required
                         id="houseMateCount"
-                        label="Household size"
+                        label="Household size (adults)"
                         className={classNames(classes.row, classes.textField)}
                         value={houseHoldSize}
                         onChange={handleHouseHoldSizeChange}

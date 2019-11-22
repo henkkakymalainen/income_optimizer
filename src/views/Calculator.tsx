@@ -11,6 +11,11 @@ import {
 } from '@material-ui/core';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 
+<<<<<<< HEAD
+=======
+import Graph from '../components/Graph';
+
+>>>>>>> 89358891f7c102e5b141468c1e5d0030ef079c80
 import StackedBar from '../components/StackedBar';
 import PieChart from '../components/PieChart';
 import StatText from '../components/StatText';
@@ -268,10 +273,18 @@ const Calculator = () => {
     };
 
     return (
+<<<<<<< HEAD
         <>
 
         <div>
 
+=======
+
+        <>
+
+        <div>
+            
+>>>>>>> 89358891f7c102e5b141468c1e5d0030ef079c80
 
             {renderCalculatorForm()}
             { incomeBreakdown &&

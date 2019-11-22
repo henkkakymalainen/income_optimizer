@@ -15,6 +15,7 @@ export interface CalculatorForm {
     usedMonths: number,
     housingCosts: number,
     houseHoldSize: number,
+    age: Age,
 }
 
 /**

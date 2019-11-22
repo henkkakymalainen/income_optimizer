@@ -45,7 +45,8 @@ const Calculator = () => {
     const [ incomeLimit, setIncomeLimit ] = useState<number | null>(null);
     const [ remainingMonths, setRemainingMonths ] = useState<number | null>(null);
     const [ monthsToReturn, setMonthsToReturn ] = useState<number>(0);
-    const [ age, setAge ] = useState<Age>('18+');
+    const [ isLivingWithParents, setIsLivingWithParents ] = useState<boolean | ''>('');
+    const [ age, setAge ] = useState<Age | ''>('');
 
     const renderSalaryField = () => {
 
@@ -131,7 +132,6 @@ const Calculator = () => {
                     displayEmpty: false,
                     native: true,
                 }}
-
                 select
             >
                 <option value={0}>0</option>
@@ -184,12 +184,87 @@ const Calculator = () => {
         );
     };
 
+    const renderIndependenceField = () =>
+        <TextField
+            required
+            id="liveWithParents"
+            label="I live with my parents"
+            className={classNames(classes.row, classes.textField)}
+            margin="normal"
+            variant="outlined"
+            value={isLivingWithParents}
+            onChange={e => e.target.value === 'true'
+                ? setIsLivingWithParents(true)
+                : e.target.value === 'false'
+                    ? setIsLivingWithParents(false)
+                    : setIsLivingWithParents('')}
+            InputLabelProps={{
+                shrink: true,
+            }}
+            SelectProps={{
+                displayEmpty: false,
+                native: true,
+            }}
+            select
+        >
+            <option value="">Select one</option>
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </TextField>;
+
+    const renderAgeField = () => {
+        const relevantOptions = isLivingWithParents === true
+            ? [
+                { value: '', label: 'Choose age group'},
+                { value: 'u20', label: '17-19 years old'},
+                { value: '20+', label: '20 or older'}
+            ]
+            : [
+                { value: '', label: 'Choose age group'},
+                { value: 'u18', label: 'Under 18 years old'},
+                { value: '18+', label: '18 or older'}
+            ];
+
+        return (
+            <TextField
+                required
+                id="age"
+                label="Age"
+                className={classNames(classes.row, classes.textField)}
+                margin="normal"
+                variant="outlined"
+                value={age}
+                onChange={e => setAge(e.target.value as Age)}
+                InputLabelProps={{
+                    shrink: true,
+                }}
+                SelectProps={{
+                    displayEmpty: false,
+                    native: true,
+                }}
+                select
+            >
+                { relevantOptions.map((opt, index) =>
+                    <option key={`${index} ${opt.value}`} value={opt.value}>
+                        { opt.label }
+                    </option>
+                ) }
+            </TextField>
+        );
+    };
+
+/*    const renderChildrenField = () => {*/
+        //return ();
+    //};
+
     const formIsValid = (): boolean => {
         return [
             typeof annualIncome === 'number',
             typeof salaryRow === 'number',
             typeof housingCosts === 'number',
             typeof houseHoldSize === 'number',
+            typeof isLivingWithParents === 'boolean',
+            age !== '',
         ].every(fieldIsValid => fieldIsValid)
     };
 
@@ -206,6 +281,7 @@ const Calculator = () => {
             usedMonths,
             housingCosts: housingCosts as number,
             houseHoldSize: houseHoldSize as number,
+            age: age as Age,
         };
     };
 
@@ -254,6 +330,10 @@ const Calculator = () => {
                         onChange={e => setHousingCosts(Number(e.target.value))}
                         margin="normal"
                         variant="outlined" />
+                    { renderIndependenceField() }
+                    { typeof isLivingWithParents === 'boolean' &&
+                        renderAgeField()
+                    }
                     { renderHouseholdSizeFields() }
                     <Button
                         className={classes.textField}
@@ -303,7 +383,7 @@ const Calculator = () => {
                     value={`${remainingMonths}`}
                 />
             }
-            { monthsToReturn &&
+            { monthsToReturn && age !== '' &&
                 <StatText
                     label="You have withdrawn benefits from too many months. You must return them from"
                     value={`${monthsToReturn} months = ${monthsToReturn * getMonthlyBenefitAmount(studentBenefits, age)} €`}

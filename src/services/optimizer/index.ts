@@ -8,6 +8,7 @@ import { CalculatorForm, HourlySalary, StandardSalary, Age } from '../types';
 import { ChartData } from 'react-chartjs-2';
 import * as chartjs from 'chart.js';
 import moment from 'moment';
+export * from './housingBenefits';
 
 const months = ['Jan','Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 

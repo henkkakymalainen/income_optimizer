@@ -18,7 +18,7 @@ import PieChart from '../components/PieChart';
 import StatText from '../components/StatText';
 
 import classNames from 'classnames';
-import { CalculatorForm, Age } from '../services/types';
+import { CalculatorForm, Age, Salary, HourlySalary } from '../services/types';
 import { incomeLimits, studentBenefits } from '../services/data/studentBenefits';
 import {
     getIncomeProjectionDataset,
@@ -34,8 +34,12 @@ import moment from 'moment';
 const Calculator = () => {
     const classes = useStyles();
     const [ annualIncome, setAnnualIncome ] = useState<number | ''>('');
-    const [ salaryRow, setSalaryRow ] = useState<number | ''>('');
-    const [ salaryRowType, setSalaryRowType ] = useState<'monthly' | 'hourly'>('monthly');
+    const [ salaries, setSalaries ] = useState<Salary[]>([
+        {
+            type: 'monthly',
+            amount: 0,
+        },
+    ]);
     const [ usedMonths, setUsedMonths ] = useState(0);
     const [ housingCosts, setHousingCosts ] = useState<number | ''>('');
     const [ houseHoldSize, setHouseHoldSize ] = useState<number | ''>(1);
@@ -48,34 +52,65 @@ const Calculator = () => {
     const [ isLivingWithParents, setIsLivingWithParents ] = useState<boolean | ''>('');
     const [ age, setAge ] = useState<Age | ''>('');
 
-    const renderSalaryField = () => {
+    const renderSalaryField = (salary: Salary, index: number) => {
 
-        const handleTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-            if (event.target.value === 'monthly' || event.target.value === 'hourly') {
-                setSalaryRowType(event.target.value);
-            }
+        const handleValueChange = (field: string, value: string, index: number) => {
+            const newValue = field === 'type'
+                ? value
+                : parseInt(value);
+            const updatedSalary: Salary = {
+                ...salary,
+                [field]: newValue,
+            };
+            const updatedSalaries = [...salaries];
+            updatedSalaries.splice(index, 1, updatedSalary);
+            setSalaries(updatedSalaries);
         };
 
         return (
-            <Grid container className={classes.row}>
+            <Grid container key={index} className={classes.row}>
                 <Grid item>
                      <TextField
                         required
                         id="currentSalary"
                         label="Current salary"
-                        className={classes.textField}
+                        className={classNames(classes.textField, classes.narrowField)}
                         margin="normal"
                         variant="outlined"
-                        value={salaryRow}
-                        onChange={e => setSalaryRow(parseInt(e.target.value) || '')}
+                        value={salary.amount || ''}
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                        onChange={e => handleValueChange('amount', e.target.value, index)}
+                        type="number"
                     />
+                </Grid>
+                { salary.type === 'hourly' &&
+                    <Grid item>
+                        <TextField
+                            required
+                            id="monthlyHours"
+                            label="Monthly hours"
+                            className={classNames(classes.textField, classes.narrowField)}
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                            margin="normal"
+                            variant="outlined"
+                            value={(salary as HourlySalary).monthlyHours || ''}
+                            onChange={e => handleValueChange('monthlyHours', e.target.value, index)}
+                            type="number"
+                        />
+                    </Grid>
+                }
+                <Grid item>
                     <TextField
                         id='units'
                         name='units'
                         select
-                        className={classes.textField}
-                        value={salaryRowType}
-                        onChange={handleTypeChange}
+                        className={classNames(classes.textField, classes.narrowField)}
+                        value={salary.type}
+                        onChange={e => handleValueChange('type', e.target.value, index)}
                         InputLabelProps={{
                             shrink: true,
                             style: {
@@ -97,19 +132,27 @@ const Calculator = () => {
                             € / h
                         </option>
                     </TextField>
-                    <FormControl
-                        margin="normal"
-                        variant="outlined"
-                    >
-                        <Button
-                            variant="outlined"
-                            onClick={() => {}}
-                            className={classes.button}
-                        >
-                            Add row
-                        </Button>
-                    </FormControl>
                 </Grid>
+                { (index === salaries.length - 1) &&
+                    <Grid item>
+                        <FormControl
+                            margin="normal"
+                            variant="outlined"
+                        >
+                                <Button
+                                    variant="outlined"
+                                    onClick={() => setSalaries(
+                                        [ ...salaries,
+                                            { type: 'monthly', amount: 0 }
+                                        ]
+                                    )}
+                                    className={classes.button}
+                                >
+                                    Add row
+                                </Button>
+                        </FormControl>
+                    </Grid>
+                }
             </Grid>
         )
     };
@@ -260,7 +303,6 @@ const Calculator = () => {
     const formIsValid = (): boolean => {
         return [
             typeof annualIncome === 'number',
-            typeof salaryRow === 'number',
             typeof housingCosts === 'number',
             typeof houseHoldSize === 'number',
             typeof isLivingWithParents === 'boolean',
@@ -273,11 +315,7 @@ const Calculator = () => {
     const getFormData = (): CalculatorForm => {
         return {
             grossIncome: annualIncome as number,
-            salaries: [{
-                type: salaryRowType,
-                amount: salaryRow as number,
-                ...(salaryRowType === 'hourly' && { monthlyHours: 60 })
-            }],
+            salaries,
             usedMonths,
             housingCosts: housingCosts as number,
             houseHoldSize: houseHoldSize as number,
@@ -297,7 +335,6 @@ const Calculator = () => {
             form.usedMonths,
             moment());
         const benefitMonthsToReturn = benefitsToReturn(incomeLimits, form.grossIncome, form.usedMonths);
-        console.log(`How much can I still make and still withdraw 9 months of benefits? ${incomeUntilNineMonthLimit}`);
         salaryData && setGraphData(salaryData);
         breakdown && setIncomeBreakdown(breakdown);
         setIncomeLimit(incomeUntilNineMonthLimit);
@@ -312,19 +349,19 @@ const Calculator = () => {
                     <TextField
                         required
                         id="annualIncome"
-                        label="Total annual gross income (€)"
+                        label="Annual gross income (€)"
                         className={classNames(classes.row, classes.textField)}
                         value={annualIncome}
                         onChange={e => setAnnualIncome(Number(e.target.value))}
                         color="primary"
                         margin="normal"
                         variant="outlined" />
-                    { renderSalaryField() }
+                    { salaries.map(renderSalaryField) }
                     { renderUsedBenefitMonths() }
                     <TextField
                         required
                         id="housingCosts"
-                        label="Monthly housing costs (€)"
+                        label="Housing costs (€ / mo)"
                         className={classNames(classes.row, classes.textField)}
                         value={housingCosts}
                         onChange={e => setHousingCosts(Number(e.target.value))}
@@ -399,7 +436,10 @@ const useStyles = makeStyles((theme: Theme) =>
         textField: {
             marginLeft: theme.spacing(1),
             marginRight: theme.spacing(1),
-            maxWidth: 250,
+            maxWidth: 200,
+        },
+        narrowField: {
+            maxWidth: 150,
         },
         center: {
             display: 'flex',
@@ -413,7 +453,7 @@ const useStyles = makeStyles((theme: Theme) =>
             marginTop: theme.spacing(3),
         },
         row: {
-            maxWidth: 500,
+            maxWidth: 600,
         },
         button: {
             height: theme.spacing(7),

@@ -99,7 +99,13 @@ export const getStudentBenefitDataset = (
     });
 };
 
-export const getIncomeProjectionDataset = (form: CalculatorForm): chartjs.ChartData => {
+const getHousingBenefitDataSet = (benefitAmount: number) => {
+    const currentMonth = moment().month();
+    const dataset = new Array(12 - currentMonth).fill(0);
+    return dataset.map((_, index) => benefitAmount);
+};
+
+export const getIncomeProjectionDataset = (form: CalculatorForm, housingBenefit: number): chartjs.ChartData => {
     const { grossIncome, salaries, usedMonths } = form;
     const monthlySalaries = salaries
         .filter(salary => salary.type === 'hourly')
@@ -121,22 +127,27 @@ export const getIncomeProjectionDataset = (form: CalculatorForm): chartjs.ChartD
         grossIncome,
         singleMonthsIncome,
         usedMonths,
-        '18+'); // FIXME, age not collected currently
+        '18+');
     const benefitDatasets = {
         data: benefitDatapoints,
         label: 'Student benefits',
         backgroundColor: 'rgba(54, 162, 235)',
     };
+    const housingBenefitDatasets = {
+        data: getHousingBenefitDataSet(housingBenefit),
+        label: 'Housing benefits',
+        backgroundColor: '#FFCC56',
+    };
     return {
         labels,
-        datasets: [salaryDatasets, benefitDatasets],
+        datasets: [salaryDatasets, benefitDatasets, housingBenefitDatasets],
     }
 };
 
-export const getIncomeBreakdownDataset = (form: CalculatorForm): chartjs.ChartData => {
-    const age = '18+'; // FIXME, not included in the form currently
+export const getIncomeBreakdownDataset = (form: CalculatorForm, housingBenefit: number): chartjs.ChartData => {
+    const { age } = form;
     const monthlyBenefit = studentBenefits.find(b => b.age === age)!.amount;
-    // TODO: Add housing benefits
+    const currentMonth = moment().month()
     return {
         labels: [
             'Salary',
@@ -144,7 +155,7 @@ export const getIncomeBreakdownDataset = (form: CalculatorForm): chartjs.ChartDa
             'Housing benefits',
         ],
         datasets: [{
-            data: [form.grossIncome, monthlyBenefit * form.usedMonths, 0], // FIXME, housing benefits
+            data: [form.grossIncome, monthlyBenefit * form.usedMonths, housingBenefit * currentMonth],
             backgroundColor: ['rgba(255, 99, 132)', 'rgba(54, 162, 235)', 'rgba(255, 205, 86)'],
         }],
     };

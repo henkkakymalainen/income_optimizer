@@ -18,6 +18,8 @@ export interface CalculatorForm {
     age: Age,
     isMarried: boolean,
     kids: number,
+    salariedPeople: number,
+    householdIncome: number,
 }
 
 /**

@@ -92,8 +92,11 @@ export const calculateHousingBenefit = (
         kids,
         incomeForCalculation,
         city);
+    hasTooHighIncome && console.log(`${incomeForCalculation} is too high for housing benefits`);
     if (hasTooHighIncome) return 0;
     const maxBenefit = getMaxBenefitAmount(adults + kids, city);
+    console.log(`Max benefit for ${adults} adults and ${kids} kids in ${city} is ${maxBenefit}`);
     const deductible = getDeductible(incomeForCalculation, adults, kids);
+    console.log(`Deductible is ${deductible}`);
     return getBenefitAmount(housingCosts, deductible, maxBenefit);
 }

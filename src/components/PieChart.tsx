@@ -9,6 +9,7 @@ interface OwnProps {
     width: number,
     data: ChartData<chartjs.ChartData>,
     title: string,
+    subtitle?: string,
 };
 
 type Props = OwnProps;
@@ -25,6 +26,14 @@ const PieChart = (props: Props) => {
             >
                 { props.title }
             </Typography>
+            { props.subtitle &&
+                <Typography
+                    variant="h6"
+                    className={classes.subtitle}
+                >
+                    { props.subtitle }
+                </Typography>
+            }
             <div className={classes.graph}>
                 <Pie
                     data={data}
@@ -53,7 +62,10 @@ const useStyles = makeStyles((theme: Theme) =>
         },
         title: {
             paddingTop: theme.spacing(2),
-            paddingBottom: theme.spacing(2),
+            paddingBottom: theme.spacing(1),
+        },
+        subtitle: {
+            paddingBottom: theme.spacing(1),
         },
 }));
 

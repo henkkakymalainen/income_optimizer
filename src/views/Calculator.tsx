@@ -23,9 +23,12 @@ import {
     calculateRemainingBenefitMonths,
     benefitsToReturn,
     getMonthlyBenefitAmount,
+    calculateHousingBenefit,
+    hourlyWageToMonthlySalary,
 } from '../services/optimizer';
 import * as chartjs from 'chart.js';
 import moment from 'moment';
+import kunnat from '../services/data/kunnat.json';
 
 const Calculator = () => {
     const classes = useStyles();
@@ -49,6 +52,10 @@ const Calculator = () => {
     const [ isMarried, setIsMarried ] = useState(false);
     const [ kids, setKids ] = useState(0);
     const [ age, setAge ] = useState<Age | ''>('');
+    const [ salariedPeople, setSalariedPeople ] = useState<number | ''>('');
+    const [ householdIncome, setHouseholdIncome ] = useState<number | ''>('');
+    const [ housingBenefit, setHousingBenefit ] = useState(0);
+    const [ city, setCity ] = useState('');
 
     const renderSalaryField = (salary: Salary, index: number) => {
 
@@ -63,6 +70,18 @@ const Calculator = () => {
             const updatedSalaries = [...salaries];
             updatedSalaries.splice(index, 1, updatedSalary);
             setSalaries(updatedSalaries);
+            if (salariedPeople === '') {
+                setSalariedPeople(1);
+            }
+            if (salariedPeople === 1) {
+                const monthlySalaries = salaries
+                    .filter(salary => salary.type === 'hourly')
+                    .map(salary => salary as HourlySalary) // Gotta force this type for the compiler
+                    .map(hourlyWageToMonthlySalary)
+                    .concat(salaries.filter(salary => salary.type === 'monthly'))
+                const singleMonthsIncome = monthlySalaries.reduce((total, salary) => total + salary.amount, 0);
+                setHouseholdIncome(singleMonthsIncome);
+            }
         };
 
         return (
@@ -335,6 +354,64 @@ const Calculator = () => {
             type="number"
         />
 
+    const renderCityField = () =>
+        <TextField
+            required
+            id="city"
+            label="Municipality"
+            className={classNames(classes.row, classes.textField)}
+            margin="normal"
+            variant="outlined"
+            value={city}
+            onChange={e => setCity(e.target.value)}
+            InputLabelProps={{
+                shrink: true,
+            }}
+            SelectProps={{
+                displayEmpty: false,
+                native: true,
+            }}
+            select
+        >
+            { kunnat.map(kunta => {
+                return (
+                    <option key={kunta} value={kunta}>{kunta}</option>
+                );
+            })}
+        </TextField>;
+
+    const renderSalariedPeopleField = () =>
+        <TextField
+            required
+            id="salariedPeople"
+            label="Members of household with salaries"
+            className={classNames(classes.row, classes.textField)}
+            margin="normal"
+            variant="outlined"
+            value={salariedPeople}
+            onChange={e => setSalariedPeople(parseInt(e.target.value))}
+            InputLabelProps={{
+                shrink: true,
+            }}
+            type="number"
+        />
+
+    const renderHouseholdIncomeField  = () =>
+        <TextField
+            required
+            id="householdIncome"
+            label="Household total income (€ / mo)"
+            className={classNames(classes.row, classes.textField)}
+            margin="normal"
+            variant="outlined"
+            value={householdIncome}
+            onChange={e => setHouseholdIncome(parseInt(e.target.value))}
+            InputLabelProps={{
+                shrink: true,
+            }}
+            type="number"
+        />
+
     const formIsValid = (): boolean => {
         return [
             typeof annualIncome === 'number',
@@ -342,6 +419,9 @@ const Calculator = () => {
             typeof houseHoldSize === 'number',
             typeof isLivingWithParents === 'boolean',
             age !== '',
+            typeof salariedPeople === 'number' &&
+                salariedPeople <= houseHoldSize,
+            typeof householdIncome === 'number',
         ].every(fieldIsValid => fieldIsValid)
     };
 
@@ -357,14 +437,14 @@ const Calculator = () => {
             age: age as Age,
             isMarried,
             kids,
+            salariedPeople: salariedPeople as number,
+            householdIncome: householdIncome as number,
         };
     };
 
     const handleCalculateButton = () => {
         if (!formIsValid()) return;
         const form = getFormData();
-        const salaryData = getIncomeProjectionDataset(form);
-        const breakdown = getIncomeBreakdownDataset(form);
         const incomeUntilNineMonthLimit = calculateIncomeUntilNineMonths(incomeLimits, form.grossIncome);
         const remainingBenefitMonths = calculateRemainingBenefitMonths(
             incomeLimits,
@@ -372,11 +452,21 @@ const Calculator = () => {
             form.usedMonths,
             moment());
         const benefitMonthsToReturn = benefitsToReturn(incomeLimits, form.grossIncome, form.usedMonths);
-        salaryData && setGraphData(salaryData);
-        breakdown && setIncomeBreakdown(breakdown);
+        const housingBenefitAmount = calculateHousingBenefit(
+            householdIncome || 0,
+            housingCosts || 0,
+            city,
+            houseHoldSize || 0,
+            kids,
+            salariedPeople || 0);
         setIncomeLimit(incomeUntilNineMonthLimit);
         setRemainingMonths(remainingBenefitMonths);
         setMonthsToReturn(benefitMonthsToReturn);
+        setHousingBenefit(housingBenefitAmount);
+        const salaryData = getIncomeProjectionDataset(form, housingBenefitAmount);
+        const breakdown = getIncomeBreakdownDataset(form, housingBenefitAmount);
+        salaryData && setGraphData(salaryData);
+        breakdown && setIncomeBreakdown(breakdown);
     };
 
     const renderCalculatorForm = () => {
@@ -405,12 +495,15 @@ const Calculator = () => {
                         margin="normal"
                         variant="outlined" />
                     { renderIndependenceField() }
+                    { renderCityField() }
                     { typeof isLivingWithParents === 'boolean' &&
                         renderAgeField()
                     }
                     { renderHouseholdSizeFields() }
                     { renderMarriedField() }
-                    { renderKidsField() }
+                    { hasHouseMates && renderKidsField() }
+                    { hasHouseMates && renderSalariedPeopleField() }
+                    { hasHouseMates && renderHouseholdIncomeField() }
                     <Button
                         className={classes.textField}
                         variant="contained"
@@ -433,6 +526,7 @@ const Calculator = () => {
                     width={600}
                     data={incomeBreakdown}
                     title="Income breakdown"
+                    subtitle={housingBenefit ? "Assuming housing benefits have been used the whole year" : ""}
                 />
             }
             { graphData &&

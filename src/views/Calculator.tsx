@@ -10,13 +10,9 @@ import {
     Radio,
 } from '@material-ui/core';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-
-import Graph from '../components/Graph';
-
 import StackedBar from '../components/StackedBar';
 import PieChart from '../components/PieChart';
 import StatText from '../components/StatText';
-
 import classNames from 'classnames';
 import { CalculatorForm, Age, Salary, HourlySalary } from '../services/types';
 import { incomeLimits, studentBenefits } from '../services/data/studentBenefits';
@@ -430,12 +426,7 @@ const Calculator = () => {
     };
 
     return (
-
-        <>
-
         <div>
-            
-
             {renderCalculatorForm()}
             { incomeBreakdown &&
                 <PieChart
@@ -469,7 +460,6 @@ const Calculator = () => {
                     value={`${monthsToReturn} months = ${monthsToReturn * getMonthlyBenefitAmount(studentBenefits, age)} €`}
                 />
             }
-
         </div>
     );
 };

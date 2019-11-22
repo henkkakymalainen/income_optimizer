@@ -50,6 +50,8 @@ const Calculator = () => {
     const [ remainingMonths, setRemainingMonths ] = useState<number | null>(null);
     const [ monthsToReturn, setMonthsToReturn ] = useState<number>(0);
     const [ isLivingWithParents, setIsLivingWithParents ] = useState<boolean | ''>('');
+    const [ isMarried, setIsMarried ] = useState(false);
+    const [ kids, setKids ] = useState(0);
     const [ age, setAge ] = useState<Age | ''>('');
 
     const renderSalaryField = (salary: Salary, index: number) => {
@@ -296,9 +298,46 @@ const Calculator = () => {
         );
     };
 
-/*    const renderChildrenField = () => {*/
-        //return ();
-    //};
+    const renderMarriedField = () =>
+        <TextField
+            required
+            id="isMarried"
+            label="Married"
+            className={classNames(classes.row, classes.textField)}
+            margin="normal"
+            variant="outlined"
+            value={isMarried}
+            onChange={e => e.target.value === 'true'
+                ? setIsMarried(true)
+                : setIsMarried(false)}
+            InputLabelProps={{
+                shrink: true,
+            }}
+            SelectProps={{
+                displayEmpty: false,
+                native: true,
+            }}
+            select
+        >
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </TextField>;
+
+    const renderKidsField = () =>
+        <TextField
+            required
+            id="kids"
+            label="Number of children"
+            className={classNames(classes.row, classes.textField)}
+            margin="normal"
+            variant="outlined"
+            value={kids}
+            onChange={e => setKids(parseInt(e.target.value))}
+            InputLabelProps={{
+                shrink: true,
+            }}
+            type="number"
+        />
 
     const formIsValid = (): boolean => {
         return [
@@ -320,6 +359,8 @@ const Calculator = () => {
             housingCosts: housingCosts as number,
             houseHoldSize: houseHoldSize as number,
             age: age as Age,
+            isMarried,
+            kids,
         };
     };
 
@@ -372,6 +413,8 @@ const Calculator = () => {
                         renderAgeField()
                     }
                     { renderHouseholdSizeFields() }
+                    { renderMarriedField() }
+                    { renderKidsField() }
                     <Button
                         className={classes.textField}
                         variant="contained"

@@ -29,6 +29,7 @@ import {
 import * as chartjs from 'chart.js';
 import moment from 'moment';
 import kunnat from '../services/data/kunnat.json';
+import { storeCalculation } from '../services/firebase/utils';
 
 const Calculator = () => {
     const classes = useStyles();
@@ -445,6 +446,7 @@ const Calculator = () => {
     const handleCalculateButton = () => {
         if (!formIsValid()) return;
         const form = getFormData();
+        storeCalculation(form);
         const incomeUntilNineMonthLimit = calculateIncomeUntilNineMonths(incomeLimits, form.grossIncome);
         const remainingBenefitMonths = calculateRemainingBenefitMonths(
             incomeLimits,

@@ -3,6 +3,7 @@ import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
+import history from '../services/history';
 
 const HeaderBar = () => {
     const classes = useStyles();
@@ -15,16 +16,32 @@ const HeaderBar = () => {
             color="primary"
         >
             <Toolbar>
-                <IconButton edge="start" className={classes.menuButton}>
+                <IconButton
+                    edge={false}
+                    className={classes.menuButton}
+                    onClick={() => history.push('/')}
+                >
                     Calculator
                 </IconButton>
-                <IconButton edge="start" className={classes.menuButton}>
+                <IconButton
+                    edge={false}
+                    className={classes.menuButton}
+                    onClick={() => history.push('/stats')}
+                >
                     Stats
                 </IconButton>
-                <IconButton edge="start" className={classes.menuButton}>
+                <IconButton
+                    edge={false}
+                    className={classes.menuButton}
+                    onClick={() => history.push('/news')}
+                >
                     News
                 </IconButton>
-                <IconButton edge="start" className={classes.menuButton}>
+                <IconButton
+                    edge={false}
+                    className={classes.menuButton}
+                    onClick={() => history.push('/about')}
+                >
                     About
                 </IconButton>
             </Toolbar>
